@@ -648,6 +648,19 @@ function App() {
           settings={settings}
           user={user}
           onClose={() => setEditing(null)}
+          onDelete={async () => {
+            if (!("id" in editing)) return;
+            await save(
+              "/proposals/" + editing.id,
+              { version: editing.version, confirmation: editing.management },
+              "DELETE",
+            );
+            await refresh();
+            setEditing(null);
+            notify(
+              "품의를 삭제했습니다. 연결된 결제 항목도 목록과 집계에서 제외했습니다.",
+            );
+          }}
           onSave={async (value) => {
             await save(
               "id" in editing ? `/proposals/${editing.id}` : "/proposals",
@@ -1161,11 +1174,13 @@ function Editor({
   user,
   onClose,
   onSave,
+  onDelete,
 }: {
   initial: Proposal | ProposalInput;
   settings: Settings;
   user: User;
   onClose: () => void;
+  onDelete: () => Promise<void>;
   onSave: (p: Proposal | ProposalInput) => Promise<void>;
 }) {
   const [value, setValue] = useState(clone(initial)),
@@ -1908,6 +1923,32 @@ function Editor({
               모든 결제 항목의 필수 단계와 금액을 확인합니다.
             </span>
             <div>
+              {id && user.role === "admin" && (
+                <button
+                  type="button"
+                  className="danger-text"
+                  disabled={busy}
+                  onClick={async () => {
+                    if (
+                      !confirm(
+                        `「${initial.title}」 품의를 삭제할까요?\n연결된 결제 ${initial.payments.length}건과 첨부가 목록에서 제외됩니다. 삭제 이력과 복구 자료는 보관됩니다.`,
+                      )
+                    )
+                      return;
+                    setBusy(true);
+                    setError("");
+                    try {
+                      await onDelete();
+                    } catch (e) {
+                      setError((e as Error).message);
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  품의 삭제
+                </button>
+              )}
               <button type="button" disabled={busy} onClick={onClose}>
                 닫기
               </button>

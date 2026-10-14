@@ -282,6 +282,47 @@ app.put(
     return res.json(p);
   }),
 );
+app.delete(
+  "/api/proposals/:id",
+  admin,
+  wrap(async (req, res) => {
+    const input = z
+      .object({
+        version: z.number().int().positive(),
+        confirmation: z.string(),
+      })
+      .parse(req.body);
+    const current = await getProposal(String(req.params.id));
+    if (!current)
+      return res.status(404).json({ error: "품의를 찾을 수 없습니다" });
+    if (input.confirmation !== current.management)
+      return res
+        .status(400)
+        .json({ error: "삭제할 관리번호가 일치하지 않습니다" });
+    if (input.version !== current.version)
+      return res.status(409).json({
+        error: "다른 사용자가 수정했습니다. 새로고침 후 다시 삭제하세요",
+      });
+    await makeBackup(true);
+    const result = await transact(async () => {
+      const p = await getProposal(current.id);
+      if (!p) return "missing";
+      if (p.version !== input.version) return "conflict";
+      await db
+        .prepare("INSERT INTO proposal_deletions VALUES(?,?,?)")
+        .run(p.id, new Date().toISOString(), res.locals.user.id);
+      await audit(res.locals.user, "품의 삭제", p.id, JSON.stringify(p));
+      return "ok";
+    });
+    if (result === "missing")
+      return res.status(404).json({ error: "이미 삭제된 품의입니다" });
+    if (result === "conflict")
+      return res.status(409).json({
+        error: "다른 사용자가 수정했습니다. 새로고침 후 다시 삭제하세요",
+      });
+    return res.json({ ok: true });
+  }),
+);
 app.get("/api/settings", async (_req, res) => res.json(await getSettings()));
 app.put(
   "/api/settings",
@@ -429,15 +470,17 @@ function fileMime(buffer: Buffer) {
     return "image/jpeg";
   return null;
 }
-app.get("/api/proposals/:id/attachments", async (req, res) =>
-  res.json(
+app.get("/api/proposals/:id/attachments", async (req, res) => {
+  if (!(await getProposal(String(req.params.id))))
+    return res.status(404).json({ error: "품의를 찾을 수 없습니다" });
+  return res.json(
     await db
       .prepare(
         "SELECT id,proposal_id,payment_id,name,mime,size,created_at FROM attachments WHERE proposal_id=?",
       )
       .all(String(req.params.id)),
-  ),
-);
+  );
+});
 app.post(
   "/api/proposals/:id/attachments",
   writer,
@@ -502,7 +545,9 @@ app.get(
   "/api/attachments/:id",
   wrap(async (req, res) => {
     const a = (await db
-      .prepare("SELECT * FROM attachments WHERE id=?")
+      .prepare(
+        "SELECT a.* FROM attachments a WHERE NOT EXISTS (SELECT 1 FROM proposal_deletions d WHERE d.proposal_id=a.proposal_id) AND a.id=?",
+      )
       .get(String(req.params.id))) as
       | {
           name: string;
@@ -511,7 +556,8 @@ app.get(
           proposal_id: string;
         }
       | undefined;
-    if (!a) return res.status(404).json({ error: "파일이 없습니다" });
+    if (!a || !(await getProposal(a.proposal_id)))
+      return res.status(404).json({ error: "파일이 없습니다" });
     res.setHeader("Content-Type", a.mime);
     res.setHeader(
       "Content-Disposition",
@@ -526,7 +572,9 @@ app.delete(
   writer,
   wrap(async (req, res) => {
     const a = (await db
-      .prepare("SELECT * FROM attachments WHERE id=?")
+      .prepare(
+        "SELECT a.* FROM attachments a WHERE NOT EXISTS (SELECT 1 FROM proposal_deletions d WHERE d.proposal_id=a.proposal_id) AND a.id=?",
+      )
       .get(String(req.params.id))) as
       | {
           name: string;
@@ -534,7 +582,8 @@ app.delete(
           proposal_id: string;
         }
       | undefined;
-    if (!a) return res.status(404).json({ error: "파일이 없습니다" });
+    if (!a || !(await getProposal(a.proposal_id)))
+      return res.status(404).json({ error: "파일이 없습니다" });
     await transact(async () => {
       await db
         .prepare("DELETE FROM attachments WHERE id=?")
@@ -745,7 +794,11 @@ async function businessBackup(snapshot?: {
   return transact(async () => {
     const attachments =
       snapshot?.attachments ||
-      (await db.prepare("SELECT * FROM attachments").all());
+      (await db
+        .prepare(
+          "SELECT a.* FROM attachments a WHERE NOT EXISTS (SELECT 1 FROM proposal_deletions d WHERE d.proposal_id=a.proposal_id)",
+        )
+        .all());
     const files = [];
     for (const a of attachments)
       files.push({
@@ -873,7 +926,9 @@ app.post(
           await writeAttachment(f.path, f.buffer);
           written.push(f.path);
         }
-        await db.exec("DELETE FROM attachments;DELETE FROM proposals");
+        await db.exec(
+          "DELETE FROM proposal_deletions;DELETE FROM attachments;DELETE FROM proposals",
+        );
         for (const p of b.proposals)
           await db
             .prepare("INSERT INTO proposals VALUES(?,?,?,?)")
@@ -912,7 +967,7 @@ app.post(
   "/api/seed",
   admin,
   wrap(async (_req, res) => {
-    if ((await listProposals()).length)
+    if (await db.prepare("SELECT id FROM proposals LIMIT 1").get())
       return res.status(409).json({
         error: "빈 데이터베이스에서만 예시 자료를 생성할 수 있습니다",
       });
@@ -934,7 +989,11 @@ async function makeBackup(force = false) {
       const snapshot = {
         proposals: await listProposals(),
         settings: await getSettings(),
-        attachments: await db.prepare("SELECT * FROM attachments").all(),
+        attachments: await db
+          .prepare(
+            "SELECT a.* FROM attachments a WHERE NOT EXISTS (SELECT 1 FROM proposal_deletions d WHERE d.proposal_id=a.proposal_id)",
+          )
+          .all(),
       };
       await db
         .prepare("INSERT INTO recovery_snapshots VALUES(?,?)")

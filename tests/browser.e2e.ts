@@ -114,6 +114,18 @@ test("브라우저에서 로그인·혼합 품의 확인·등록·수정·달력
       .waitFor();
     await page.getByLabel("품의 검색").fill("브라우저 등록");
     assert.equal(await page.locator("tbody > tr").count(), 1);
+    await page
+      .locator("tbody tr")
+      .first()
+      .getByRole("button", { name: "상세 ↗" })
+      .click();
+    page.once("dialog", (dialog) => dialog.dismiss());
+    await page.getByRole("button", { name: "품의 삭제", exact: true }).click();
+    assert.equal(await page.getByRole("dialog").count(), 1);
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: "품의 삭제", exact: true }).click();
+    await page.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(await page.locator("tbody tr").count(), 0);
     for (const name of [
       "업무 달력",
       "집행 통계",

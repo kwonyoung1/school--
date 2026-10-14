@@ -169,6 +169,33 @@ test("libSQL 어댑터: 임시 서버 디스크 교체 후 계정·품의·첨�
         );
       },
     );
+    await t.test("libSQL 삭제·백업·재시작 후 예시 재생성 방지", async () => {
+      const rows = (await (await request("/proposals")).json()) as Proposal[];
+      for (const p of rows)
+        assert.equal(
+          (
+            await request("/proposals/" + p.id, "DELETE", {
+              version: p.version,
+              confirmation: p.management,
+            })
+          ).status,
+          200,
+        );
+      assert.equal((await request("/attachments/" + attachment)).status, 404);
+      assert.equal((await (await request("/proposals")).json()).length, 0);
+      const backup = await (await request("/backup")).json();
+      assert.equal(backup.attachments.length, 0);
+      const snapshots = await (await request("/recovery-backups")).json();
+      const recovery = await (
+        await request("/recovery-backups/" + snapshots[0].id)
+      ).json();
+      assert.equal(recovery.proposals.length, 1);
+      await stop();
+      await start();
+      await login();
+      assert.equal((await request("/seed", "POST", {})).status, 409);
+      assert.equal((await (await request("/proposals")).json()).length, 0);
+    });
   } finally {
     await stop();
     rmSync(directory, { recursive: true, force: true });

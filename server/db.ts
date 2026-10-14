@@ -17,6 +17,7 @@ await db.exec(`
 CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,username TEXT UNIQUE NOT NULL,name TEXT NOT NULL,role TEXT NOT NULL,password TEXT NOT NULL,active INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS sessions(token TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),csrf TEXT NOT NULL,expires INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS proposals(id TEXT PRIMARY KEY, management TEXT UNIQUE NOT NULL, version INTEGER NOT NULL, data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS proposal_deletions(proposal_id TEXT PRIMARY KEY REFERENCES proposals(id),deleted_at TEXT NOT NULL,deleted_by TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT,at TEXT NOT NULL,user_id TEXT NOT NULL,actor TEXT NOT NULL,action TEXT NOT NULL,target TEXT NOT NULL,detail TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1),data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS attachments(id TEXT PRIMARY KEY,proposal_id TEXT NOT NULL REFERENCES proposals(id),payment_id TEXT NOT NULL,name TEXT NOT NULL,mime TEXT NOT NULL,size INTEGER NOT NULL,path TEXT NOT NULL,created_at TEXT NOT NULL);
@@ -77,7 +78,9 @@ if (!(await db.prepare("SELECT id FROM users LIMIT 1").get())) {
 export async function listProposals(): Promise<Proposal[]> {
   return (
     (await db
-      .prepare("SELECT data FROM proposals ORDER BY management DESC")
+      .prepare(
+        "SELECT data FROM proposals WHERE NOT EXISTS (SELECT 1 FROM proposal_deletions d WHERE d.proposal_id=proposals.id) ORDER BY management DESC",
+      )
       .all()) as {
       data: string;
     }[]
@@ -85,7 +88,9 @@ export async function listProposals(): Promise<Proposal[]> {
 }
 export async function getProposal(id: string): Promise<Proposal | undefined> {
   const row = (await db
-    .prepare("SELECT data FROM proposals WHERE id=?")
+    .prepare(
+      "SELECT data FROM proposals WHERE id=? AND NOT EXISTS (SELECT 1 FROM proposal_deletions d WHERE d.proposal_id=proposals.id)",
+    )
     .get(id)) as
     | {
         data: string;
@@ -135,7 +140,7 @@ export async function insertProposal(
   return p;
 }
 export async function seed() {
-  if ((await listProposals()).length) return;
+  if (await db.prepare("SELECT id FROM proposals LIMIT 1").get()) return;
   const date = today();
   const ago = (n: number) =>
     new Date(Date.parse(date) - n * 86400000).toISOString().slice(0, 10);

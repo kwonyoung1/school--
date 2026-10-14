@@ -245,6 +245,15 @@ test("실제 서버: 인증·권한·저장·엑셀·첨부·백업·재시작",
       assert.equal((await request("/backup")).status, 403);
       assert.equal((await request("/users")).status, 403);
       assert.equal(
+        (
+          await request("/proposals/" + mixed.id, "DELETE", {
+            version: mixed.version,
+            confirmation: mixed.management,
+          })
+        ).status,
+        403,
+      );
+      assert.equal(
         (await request("/settings", "PUT", defaultSettings)).status,
         403,
       );
@@ -274,6 +283,62 @@ test("실제 서버: 인증·권한·저장·엑셀·첨부·백업·재시작",
       assert.ok((await html.text()).includes('<div id="root">'));
       assert.equal((await request("/does-not-exist")).status, 404);
     });
+    await t.test(
+      "관리자 삭제·동시 수정 충돌·첨부 접근 차단·재생성 방지",
+      async () => {
+        assert.equal(
+          (
+            await request("/proposals/" + mixed.id, "DELETE", {
+              version: 1,
+              confirmation: mixed.management,
+            })
+          ).status,
+          409,
+        );
+        assert.equal(
+          (
+            await request("/proposals/" + mixed.id, "DELETE", {
+              version: mixed.version,
+              confirmation: "다른 번호",
+            })
+          ).status,
+          400,
+        );
+        const rows = (await (await request("/proposals")).json()) as Proposal[];
+        for (const p of rows) {
+          assert.equal(
+            (
+              await request("/proposals/" + p.id, "DELETE", {
+                version: p.version,
+                confirmation: p.management,
+              })
+            ).status,
+            200,
+          );
+        }
+        assert.equal((await (await request("/proposals")).json()).length, 0);
+        assert.equal(
+          (await request("/attachments/" + attachmentId)).status,
+          404,
+        );
+        assert.equal(
+          (await request("/proposals/" + mixed.id + "/attachments")).status,
+          404,
+        );
+        const current = await (await request("/backup")).json();
+        assert.equal(current.proposals.length, 0);
+        assert.equal(current.attachments.length, 0);
+        assert.equal((await request("/seed", "POST", {})).status, 409);
+        await stop();
+        await start();
+        await login();
+        assert.equal((await (await request("/proposals")).json()).length, 0);
+        const changes = (await (await request("/audit")).json()) as {
+          action: string;
+        }[];
+        assert.ok(changes.some((x) => x.action === "품의 삭제"));
+      },
+    );
   } finally {
     await stop();
     rmSync(dir, { recursive: true, force: true });

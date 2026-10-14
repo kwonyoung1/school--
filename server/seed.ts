@@ -1,6 +1,6 @@
 import { db, seed, listProposals, audit, transaction } from "./db.ts";
 await transaction(async () => {
-  if ((await listProposals()).length) {
+  if (await db.prepare("SELECT id FROM proposals LIMIT 1").get()) {
     console.log("기존 자료가 있어 예시 생성을 생략했습니다.");
     return;
   }
