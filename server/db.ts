@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY CHECK(id=1),data TEXT
 CREATE TABLE IF NOT EXISTS attachments(id TEXT PRIMARY KEY,proposal_id TEXT NOT NULL REFERENCES proposals(id),payment_id TEXT NOT NULL,name TEXT NOT NULL,mime TEXT NOT NULL,size INTEGER NOT NULL,path TEXT NOT NULL,created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS attachment_chunks(path TEXT NOT NULL,part INTEGER NOT NULL,content BLOB NOT NULL,PRIMARY KEY(path,part));
 CREATE TABLE IF NOT EXISTS recovery_snapshots(id TEXT PRIMARY KEY,data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS maintenance_actions(id TEXT PRIMARY KEY,processed_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS login_attempts(key TEXT PRIMARY KEY,count INTEGER NOT NULL,until_at INTEGER NOT NULL);
 `);
 export function passwordHash(password: string) {
@@ -74,6 +75,51 @@ if (!(await db.prepare("SELECT id FROM users LIMIT 1").get())) {
       passwordHash(password),
     );
   console.log("최초 관리자 계정 생성 완료 (비밀번호는 출력하지 않습니다)");
+}
+// Hosting-account owners can request a one-time recovery without exposing a public reset API.
+const resetId = process.env.ADMIN_PASSWORD_RESET_ID;
+if (resetId) {
+  if (!/^[A-Za-z0-9_.-]{1,100}$/.test(resetId))
+    throw new Error(
+      "ADMIN_PASSWORD_RESET_ID는 영문·숫자·점·밑줄·하이픈으로 100자 이하를 입력하세요",
+    );
+  await transaction(async () => {
+    const actionId = "admin-password-reset:" + resetId;
+    if (
+      await db
+        .prepare("SELECT id FROM maintenance_actions WHERE id=?")
+        .get(actionId)
+    )
+      return;
+    const username = process.env.ADMIN_USERNAME || "admin";
+    const user = await db
+      .prepare(
+        "SELECT id FROM users WHERE username=? AND role='admin' AND active=1",
+      )
+      .get(username);
+    if (!user) throw new Error("재설정할 활성 관리자 계정을 찾을 수 없습니다");
+    const password = process.env.ADMIN_PASSWORD;
+    if (!password || password.length < 12 || password.length > 200)
+      throw new Error(
+        "관리자 복구 비밀번호는 ADMIN_PASSWORD에 12~200자로 설정하세요",
+      );
+    await db
+      .prepare("UPDATE users SET password=? WHERE id=?")
+      .run(passwordHash(password), user.id);
+    await db.prepare("DELETE FROM sessions WHERE user_id=?").run(user.id);
+    // Login-attempt keys include a hashed client address; clear temporary lockouts for recovery.
+    await db.exec("DELETE FROM login_attempts");
+    await db
+      .prepare("INSERT INTO maintenance_actions VALUES(?,?)")
+      .run(actionId, new Date().toISOString());
+    await audit(
+      { id: "hosting-recovery", name: "호스팅 계정 복구" },
+      "관리자 비밀번호 복구",
+      user.id,
+      "일회성 복구 완료 · 관리자 세션 만료",
+    );
+    console.log("관리자 비밀번호 일회성 복구 완료 (비밀번호 미출력)");
+  });
 }
 export async function listProposals(): Promise<Proposal[]> {
   return (
