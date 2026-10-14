@@ -1,0 +1,36 @@
+# Free web server. ALL durable data, including attachments, lives in Turso.
+# Create a Turso FREE database first. Do not add a paid Render disk.
+services:
+  - type: web
+    name: school-expense-manager
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: false
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: sh scripts/start-hosted.sh
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATA_DIR
+        value: /tmp/school-runtime
+      - key: SECURE_COOKIE
+        value: "true"
+      - key: REQUIRE_REMOTE_DB
+        value: "true"
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: SEED_DEMO_DATA
+        value: "true"
