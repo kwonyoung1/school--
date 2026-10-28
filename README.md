@@ -1,3 +1,15 @@
+# School Office OS 확장 안내
+
+기존 학교 지출업무 시스템을 유지하면서 시설 작업계획·물품 구입·다중 업체 지출사업·카드기한·오늘 한 일을 추가했습니다.
+
+- [처음 사용하는 분을 위한 Cloudflare 배포 안내](BEGINNER_CLOUDFLARE_GUIDE.md)
+- [통합 업무 사용 매뉴얼](USER_GUIDE.md)
+- [구현 범위·테스트·전환 제한](docs/SCHOOL_OFFICE_IMPLEMENTATION.md)
+
+기존 실행은 아래 `npm run dev` 절차를 유지합니다. 로그인 후 통합 메뉴를 함께 사용할 수 있습니다. Workers/D1 화면은 `npm run build:cloud` → `npm run init:cloud:local` → `npm run db:migrate:local` → `npm run dev:cloud`로 실행합니다. 실제 Cloudflare 배포는 본인 계정의 D1 ID와 런타임 Secret 설정이 필요하며 아직 실행하지 않았습니다. 기존 첨부·증빙·세부 재원 배분을 포함한 전체 기능의 Workers 이전은 완료되지 않았으므로 기존 사이트와 백업을 보관하세요.
+
+---
+
 # 학교 지출업무 통합관리 시스템
 
 한국디지털미디어고등학교 행정실을 위한 실행 가능한 MVP입니다. React + TypeScript 화면, Express 서버, SQLite 데이터베이스를 사용합니다. 실제 사용자 인증·권한 검사·파일 저장은 서버에서 수행하며 브라우저를 닫거나 서버를 다시 시작해도 데이터가 유지됩니다. 회계시스템과 자동 연동되는 프로그램은 아니며 업무 진행 현황을 관리합니다.

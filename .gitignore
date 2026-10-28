@@ -3,3 +3,8 @@ dist/
 data/
 .env
 *.log
+
+.wrangler/
+.dev.vars
+dist-cloud/
+worker-bundle/
