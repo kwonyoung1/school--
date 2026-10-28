@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "school-office-os-db",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "90a9e299-86e6-44f7-9371-9de0e3084b0c",
       "migrations_dir": "migrations",
     },
   ],
