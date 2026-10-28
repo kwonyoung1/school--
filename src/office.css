@@ -1,0 +1,601 @@
+.office-workspace {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.office-workspace button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.office-workspace h3 {
+  margin-bottom: 16px;
+  font-size: 17px;
+}
+.office-workspace p {
+  line-height: 1.8;
+}
+.os-toolbar,
+.os-toolbar > div,
+.os-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.os-toolbar {
+  justify-content: space-between;
+}
+.os-toolbar > p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #64748b;
+}
+.os-panel {
+  background: #fff;
+  border: 1px solid #e0e6ef;
+  border-radius: 12px;
+  padding: 22px;
+  min-width: 0;
+}
+.os-panel + .os-panel {
+  margin-top: 2px;
+}
+.os-hero {
+  padding: 32px;
+  background: #102b4d;
+  color: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.os-hero h2 {
+  font-size: 24px;
+  margin: 8px 0;
+}
+.os-hero p {
+  color: #c1d2e8;
+}
+.os-hero .eyebrow {
+  color: #8cb8ef;
+}
+.os-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+.os-metrics button {
+  position: relative;
+  text-align: left;
+  align-items: flex-start;
+  flex-direction: column;
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  gap: 14px;
+}
+.os-metrics strong {
+  font-size: 28px;
+  color: #172f50;
+}
+.os-metrics small {
+  font-size: 12px;
+  margin-left: 7px;
+  color: #7e8ca1;
+}
+.os-metrics svg {
+  position: absolute;
+  right: 15px;
+  bottom: 25px;
+  color: #a8b8cb;
+}
+.os-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.os-task {
+  width: 100%;
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start !important;
+  text-align: left;
+  margin: 10px 0;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 8px;
+  white-space: normal;
+}
+.os-task > p {
+  white-space: pre-wrap;
+}
+.os-task span,
+.os-task small {
+  color: #61718a;
+}
+.os-filters,
+.os-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+.os-filters {
+  background: #edf2f8;
+  padding: 18px;
+  border-radius: 10px;
+}
+.os-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: #46566e;
+  font-weight: 500;
+}
+.os-field input,
+.os-field select,
+.os-field textarea,
+.os-report textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d5dce7;
+  border-radius: 6px;
+  padding: 10px;
+  background: white;
+  color: #22354e;
+}
+.os-field textarea {
+  line-height: 1.8;
+  resize: vertical;
+}
+.os-block {
+  display: block;
+  margin-top: 5px;
+  color: #738198;
+}
+.os-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.os-summary-grid span {
+  display: grid;
+  gap: 8px;
+}
+.os-project-summary {
+  background: #f1f5fa;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.os-summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.os-summary > div {
+  padding: 18px;
+  border: 1px solid #dae3ef;
+  border-radius: 8px;
+  background: white;
+  display: grid;
+  gap: 8px;
+}
+.os-summary b {
+  font-size: 18px;
+}
+.os-editor {
+  background: white;
+  width: min(1100px, 96vw);
+  max-height: 94vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 20px 80px #07182c40;
+}
+.os-editor > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 20px;
+  position: static;
+  height: auto;
+  gap: 12px;
+}
+.os-editor form {
+  display: grid;
+  gap: 18px;
+}
+.os-editor fieldset {
+  border: 0;
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+}
+.os-payment {
+  padding: 20px;
+  border: 1px solid #d9e2ef;
+  background: #fafbfd;
+  border-radius: 10px;
+  display: grid;
+  gap: 16px;
+}
+.os-payment details {
+  padding: 6px;
+}
+.os-payment summary {
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.os-actions {
+  margin: 10px 0;
+}
+.os-error,
+.os-notice,
+.os-warning {
+  padding: 12px 16px;
+  border-radius: 7px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.os-error {
+  background: #fff0f0;
+  color: #b52b36;
+  border: 1px solid #f7cece;
+}
+.os-notice {
+  background: #eaf7ef;
+  color: #266b48;
+}
+.os-warning {
+  background: #fff7df;
+  color: #8b6510;
+}
+.os-hint {
+  font-size: 12px;
+  color: #6a7b91;
+  margin: 12px 0;
+}
+.os-empty {
+  padding: 28px;
+  text-align: center;
+  color: #7d8a9e;
+}
+.os-log {
+  display: flex;
+  gap: 15px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e7edf3;
+}
+.os-log time {
+  color: #677d99;
+  flex-shrink: 0;
+}
+.os-log pre {
+  max-width: 380px;
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 11px;
+}
+.os-log p {
+  margin: 6px 0;
+}
+.os-report textarea {
+  font: inherit;
+  line-height: 1.9;
+  resize: vertical;
+}
+.office-workspace .table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.office-workspace table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.office-workspace th,
+.office-workspace td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #e5ebf2;
+  text-align: left;
+  white-space: nowrap;
+}
+.office-workspace th {
+  background: #f6f8fb;
+  font-weight: 600;
+  font-size: 12px;
+}
+.office-workspace td:first-child {
+  max-width: 340px;
+}
+.office-workspace details {
+  overflow-wrap: anywhere;
+}
+.cloud-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+}
+.cloud-sidebar {
+  background: #102541;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 18px;
+  gap: 25px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.cloud-brand {
+  font-size: 23px;
+  letter-spacing: -1px;
+  line-height: 1.25;
+}
+.cloud-brand small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: #a9bdd7;
+  letter-spacing: 1px;
+  margin-top: 10px;
+}
+.cloud-sidebar nav {
+  display: grid;
+  gap: 6px;
+}
+.cloud-sidebar nav button {
+  justify-content: flex-start;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: none;
+  color: #bacbe0;
+  padding: 12px;
+}
+.cloud-sidebar nav .active {
+  background: #284868;
+  color: #fff;
+}
+.cloud-main {
+  padding: 0 30px 30px;
+  min-width: 0;
+}
+.cloud-header {
+  height: auto;
+  position: static;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0;
+  border-bottom: 1px solid #dce5ef;
+  margin-bottom: 28px;
+}
+.cloud-heading {
+  margin-bottom: 24px;
+}
+.cloud-heading p {
+  color: #73839a;
+  margin-top: 8px;
+}
+.cloud-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #102541, #245384);
+}
+.cloud-login form {
+  width: min(420px, 92vw);
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  display: grid;
+  gap: 20px;
+  box-shadow: 0 20px 70px #00132a55;
+}
+.cloud-login h1 {
+  font-size: 26px;
+}
+.cloud-login p {
+  color: #71839c;
+}
+.cloud-main footer {
+  margin-top: 35px;
+  color: #6a7d94;
+  font-size: 12px;
+}
+.office-workspace .danger {
+  color: #b52b36;
+}
+.office-workspace .modal-backdrop {
+  z-index: 1000;
+  position: fixed;
+  inset: 0;
+  background: #0a1b35a8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+@media (max-width: 1200px) {
+  .os-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .os-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 800px) {
+  .cloud-shell {
+    grid-template-columns: 1fr;
+  }
+  .cloud-sidebar {
+    position: static;
+    height: auto;
+    padding: 20px;
+  }
+  .cloud-sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .cloud-sidebar nav button {
+    padding: 9px;
+    font-size: 12px;
+  }
+  .cloud-sidebar nav svg {
+    width: 15px;
+  }
+  .cloud-sidebar > .os-hint {
+    display: none;
+  }
+  .cloud-main {
+    padding: 0 16px 24px;
+  }
+  .cloud-header {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .os-two {
+    grid-template-columns: 1fr;
+  }
+  .os-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .os-hero {
+    padding: 24px;
+  }
+  .os-hero svg {
+    display: none;
+  }
+  .os-hero h2 {
+    font-size: 21px;
+  }
+  .os-summary,
+  .os-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .os-editor {
+    padding: 16px;
+  }
+  .os-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .os-panel {
+    padding: 16px;
+  }
+  .os-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .os-toolbar {
+    align-items: flex-start;
+  }
+  .os-metrics button {
+    padding: 15px;
+  }
+  .os-log pre {
+    max-width: 240px;
+  }
+  .os-summary b {
+    font-size: 15px;
+  }
+}
+@media print {
+  body {
+    background: white;
+  }
+  .cloud-sidebar,
+  .cloud-header,
+  .cloud-heading,
+  .os-toolbar,
+  .os-filters,
+  .os-two > .os-panel:not(.os-report),
+  .os-actions,
+  .os-notice,
+  .os-error,
+  footer,
+  aside,
+  header,
+  .page-heading {
+    display: none !important;
+  }
+  .cloud-shell,
+  .cloud-main,
+  .main,
+  main,
+  .os-two {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .os-report {
+    border: 0;
+    padding: 0;
+  }
+  .os-report textarea {
+    border: 0;
+    overflow: visible;
+    height: 250mm;
+    resize: none;
+  }
+  .office-workspace {
+    display: block;
+  }
+}
+
+.os-print-report {
+  display: none;
+}
+@media print {
+  .os-report textarea {
+    display: none;
+  }
+  .os-print-report {
+    display: block;
+    white-space: pre-wrap;
+    font: 14px/2 sans-serif;
+    overflow: visible;
+  }
+}
+.app > aside nav {
+  min-height: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+.app > aside .brand,
+.app > aside .workspace,
+.app > aside .sidebar-bottom {
+  flex-shrink: 0;
+}
+.app > aside .brand b {
+  font-size: 21px;
+  letter-spacing: 0;
+}
+.cloud-sidebar {
+  width: auto;
+}
+.cloud-sidebar nav {
+  min-height: 0;
+  overflow-y: auto;
+}
+@media (max-width: 760px) {
+  .app > aside nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    flex: none;
+  }
+  .cloud-sidebar nav {
+    flex-direction: row;
+  }
+}

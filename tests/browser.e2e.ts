@@ -148,6 +148,39 @@ test("브라우저에서 로그인·혼합 품의 확인·등록·수정·달력
         .evaluate((e) => e.scrollWidth <= window.innerWidth),
       true,
     );
+    await page.setViewportSize({ width: 1440, height: 1050 });
+    await page
+      .getByRole("button", { name: "시설 작업계획", exact: false })
+      .first()
+      .click();
+    await page
+      .getByRole("button", { name: "작업계획 작성", exact: true })
+      .click();
+    const officeDialog = page.getByRole("dialog");
+    await officeDialog.getByLabel("업무명").fill("로컬 시설 조명 점검");
+    await officeDialog
+      .getByRole("button", { name: "자동 작성", exact: true })
+      .click();
+    await officeDialog
+      .getByRole("button", { name: "저장", exact: true })
+      .click();
+    await officeDialog.waitFor({ state: "hidden" });
+    await page
+      .getByRole("button", { name: "로컬 시설 조명 점검", exact: true })
+      .waitFor();
+    const officeBackup = await page.request.get(base + "/api/office/backup");
+    assert.equal(officeBackup.status(), 200);
+    assert.equal((await officeBackup.json()).records.facilities.length, 1);
+    const activities = await (
+      await page.request.get(base + "/api/office/activities")
+    ).json();
+    assert.ok(
+      activities.some(
+        (x: any) =>
+          x.entity_type === "legacy" && x.title === "브라우저 등록 가상 품의",
+      ),
+    );
+    assert.ok(activities.some((x: any) => x.entity_type === "facilities"));
     assert.deepEqual(errors, []);
   } finally {
     await browser?.close();

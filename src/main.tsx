@@ -22,6 +22,7 @@ import {
   type StageId,
 } from "../server/domain.ts";
 import "./style.css";
+import { OfficeWorkspace, officeNav, type OfficeView } from "./office.tsx";
 const won = (n: number) => new Intl.NumberFormat("ko-KR").format(n) + "원";
 const methodName = {
   card: "카드결제",
@@ -86,7 +87,13 @@ function newProposal(): ProposalInput {
   };
 }
 type View =
-  "dashboard" | "list" | "calendar" | "stats" | "archive" | "settings";
+  | "dashboard"
+  | "list"
+  | "calendar"
+  | "stats"
+  | "archive"
+  | "settings"
+  | OfficeView;
 type Filter =
   | "all"
   | "commit"
@@ -279,6 +286,9 @@ function App() {
   ];
   const nav: [View, string, string][] = [
     ["dashboard", "◫", "업무 대시보드"],
+    ...officeNav.map(
+      ([key, label]) => [key, "▦", label] as [View, string, string],
+    ),
     ["list", "☷", "지출업무 목록"],
     ["calendar", "▦", "업무 달력"],
     ["stats", "▥", "집행 통계"],
@@ -299,7 +309,7 @@ function App() {
       <aside>
         <div className="brand">
           <b>
-            DIMI<span>GO</span>
+            School<span> Office OS</span>
           </b>
           <small>한국디지털미디어고등학교</small>
         </div>
@@ -634,6 +644,13 @@ function App() {
               onSeed={() =>
                 run(() => save("/seed", {}), "가상 품의 2건을 생성했습니다")
               }
+            />
+          )}
+          {officeNav.some(([key]) => key === view) && (
+            <OfficeWorkspace
+              view={view as OfficeView}
+              onView={setView}
+              user={user}
             />
           )}
           <footer>

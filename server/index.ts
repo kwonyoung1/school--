@@ -40,6 +40,8 @@ import {
   type ProposalInput,
   type Proposal,
 } from "./domain.ts";
+import { registerOffice } from "./office.ts";
+import { OfficeError } from "../shared/office-store.ts";
 const app = express();
 app.disable("x-powered-by");
 app.use(
@@ -202,6 +204,7 @@ app.use(
   },
   auth,
 );
+await registerOffice(app);
 app.get("/api/me", (_req, res) => {
   const { id, username, name, role } = res.locals.user;
   res.json({ user: { id, username, name, role }, csrf: res.locals.csrf });
@@ -1063,6 +1066,8 @@ app.use(
     res: express.Response,
     _next: express.NextFunction,
   ) => {
+    if (error instanceof OfficeError)
+      return res.status(error.status).json({ error: error.message });
     if (error instanceof z.ZodError)
       return res
         .status(400)
